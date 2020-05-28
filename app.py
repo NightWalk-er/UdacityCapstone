@@ -5,11 +5,7 @@ from flask_cors import CORS
 from flask_migrate import Migrate
 from models import setup_db, Movie, Actor, db
 from auth import AuthError, requires_auth
-#from config import pagination
 
-#pages = pagination['pages']
-
-## creating and configuring our app
 def create_app(test_config=None):
     app = Flask(__name__)
     CORS(app)
