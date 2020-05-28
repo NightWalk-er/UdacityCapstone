@@ -3,10 +3,11 @@ from flask import request, _request_ctx_stack, Flask, abort, jsonify
 from functools import wraps
 from jose import jwt
 from urllib.request import urlopen
+from config import auth_config
 
-AUTH0_DOMAIN = 'dev-mx16muwc.auth0.com'
-ALGORITHMS = ['RS256']
-API_AUDIENCE = 'Capstone'
+AUTH0_DOMAIN = auth_config['AUTH0_DOMAIN']
+ALGORITHMS = auth_config['ALGORITHMS']
+API_AUDIENCE = auth_config['API_AUDIENCE']
 
 # Authorization Error
 class AuthError(Exception):

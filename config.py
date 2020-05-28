@@ -5,7 +5,7 @@ SECRET_KEY = os.urandom(32)
 basedir = os.path.abspath(os.path.dirname(__file__))
 
 auth_config = {
-    "AUTH0_DOMAIN" = 'dev-mx16muwc.auth0.com',
+    "AUTH0_DOMAIN"= 'dev-mx16muwc.auth0.com',
     "ALGORITHMS" = ['RS256'],
     "API_AUDIENCE" = 'Capstone'
 

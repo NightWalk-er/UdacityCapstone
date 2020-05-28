@@ -12,7 +12,7 @@ from auth import AuthError, requires_auth
 ## creating and configuring our app
 def create_app(test_config=None):
     app = Flask(__name__)
-    CORS(app, resources={r"/api/": {"origins": "*"}})
+    CORS(app)
     setup_db(app)
 
   @app.after_request
@@ -21,37 +21,50 @@ def create_app(test_config=None):
       response.headers.add('Access-Control-Allow-Headers', 'Content-Type, Authorization, true')
       response.headers.add('Access-Control-Allow-Methods', 'GET, PATCH, POST, DELETE, OPTIONS')
       return response
-
-# function defined to add pagination
-  #def paginate(request, selection):
-  #  start = ((request.args.get('page',1,type=int)) - 1) * pages
-  #  end = start + pages
-  #  objects_formatted = [object_name.format() for object_name in selection]
-  #  return objects_formatted[start:end]
   
   @app.route('/movies')
   @requires_auth('get:movies')
   def get_movies(token):
       movies = Movie.query.all()
-      movies = [movie.format() for movie in movies]
-      for movie in movies:
-        movie['actors'] = [i.format() for i in movie['actors']]
-      return jsonify(movies)
+      movie_names = [movie.format() for movie in movies]
+
+      if len(movie_names) == 0:
+        abort(404,{'message':'No movie found in database'})
+
+      for movie in movie_names:
+        movie['actors'] = [i.format() for i in movie_names['actors']]
+      return jsonify({
+        'success': True,
+        'movies': movie_names
+      })
   
   @app.route('/actors')
   @requires_auth('get:actors')
   def get_actors(token):
       actors = Actor.query.all()
-      actors = [actor.format() for actor in actors]
-      return jsonify(actors)
+      actor_names = [actor.format() for actor in actors]
+      
+      if len(actor_names) == 0:
+        abort(404,{'message':'No actor found in database'})
+      
+      return jsonify({
+        'success': True,
+        'Actors':actor_names
+      })
 
   @app.route('/movies/create', methods=['POST'])
   @requires_auth('post:movie')
   def post_new_movie(token):
       body = request.get_json()
 
+      if not body:
+        abort(400,{'message':'Require JSON body does not exist'})
+
       title = body.get('title', None)
       release_date = body.get('release_date', None)
+
+      if not title:
+        abort(422,{'message':'No title given'})
 
       movie = Movie(title=title, release_date=release_date)
       movie.insert()
@@ -68,8 +81,19 @@ def create_app(test_config=None):
   @requires_auth('post:actor')
   def post_new_actor(token):
       body = request.get_json()
+
+      if not body:
+        abort(400,{'message':'request does not contain a valid JSON body'})
+      
       name = body.get('name', None)
       age = body.get('age', None)
+
+      if not name:
+      abort(422, {'message': 'no name provided.'})
+
+      if not age:
+      abort(422, {'message': 'no age provided.'})
+
       gender = body.get('gender', None)
       movie_id = body.get('movie_id', None)
 
@@ -87,7 +111,15 @@ def create_app(test_config=None):
   @app.route('/movies/delete/<int:movie_id>', methods=['DELETE'])
   @requires_auth('delete:movie')
   def delete_movie(token, movie_id):
-      Movie.query.filter(Movie.id == movie_id).delete()
+
+      if not movie_id:
+        abort(400,{'message':'Append a movie id'})
+
+      movie_to_be_deleted=Movie.query.filter(Movie.id == movie_id).one_or_more()
+
+      if not movie_to_be_deleted:
+        abort(404,{'message':'id {} not found'.format(movie_id)})
+
       db.session.commit()
       db.session.close()
       return jsonify({
@@ -98,7 +130,14 @@ def create_app(test_config=None):
   @app.route('/actors/delete/<int:actor_id>', methods=['DELETE'])
   @requires_auth('delete:actor')
   def delete_actor(token, actor_id):
-      Actor.query.filter(Actor.id == actor_id).delete()
+
+      if not actor_id:
+        abort(400,{'message':'Append a actor id'})
+
+      actor_to_delete = Actor.query.filter(Actor.id == actor_id).one_or_more()
+      if not actor_to_delete:
+        abort(404,{'message':'id {} not found'.format(actor_id)})
+
       db.session.commit()
       db.session.close()
       return jsonify({
@@ -109,18 +148,31 @@ def create_app(test_config=None):
   @app.route('/actors/patch/<int:actor_id>', methods=['PATCH'])
   @requires_auth('patch:actors')
   def patch_actor(toekn, actor_id):
-
-      actor = Actor.query.filter(Actor.id== actor_id)
       body = request.get_json()
+
+      if not actor_id:
+        abort(400,{'message':'Append an actor'})
+      if not body:
+        abort(400,{'message':'Does not have valid JSON body'})
+
+      actor = Actor.query.filter(Actor.id == actor_id)
+      if not actor:
+        abort(404,{'message':'Actor with id {} not found in database'.format(actor_id)})
+
       name = body.get('name', None)
       age = body.get('age', None)
       gender = body.get('gender', None)
       movie_id = body.get('movie_id', None)
+
+      # adding new actor
+
       actor.name = name
       actor.age = age
       actor.gender = gender
       actor.movie_id = movie_id
+
       actor.update()
+
       return jsonify({
         "success": True,
         "message": "update occured"
@@ -129,8 +181,15 @@ def create_app(test_config=None):
   @app.route('/movies/patch/<int:movie_id>')
   @requires_auth('patch:movies')
   def patch_movie(token, movie_id):
-      movie = Movie.query.filter(Movie.id == movie_id)
+      
       body = request.get_json()
+      if not body:
+        abort(400,{'message':'No JSON body associated'})
+
+      movie = Movie.query.filter(Movie.id == movie_id)
+      if not body:
+        abort(404,{'message':'Movie id {} not found'.format(movie_id)})
+      
       title = body.get('title', None)
       release_date = body.get('release_date', None)
       movie.title = title
