@@ -21,11 +21,12 @@ class DeployTestCase(unittest.TestCase):
 
         self.new_actor = { 
             'name' : 'Maria',
-            'age' : 19 
+            'age' : 19,
+            'gender': 'female'
         }
 
         self.json_create_movie = {
-            'title' : 'Crisso Movie',
+            'title' : 'DayDreams Movie',
             'release_date' : date.today()
         }
 
