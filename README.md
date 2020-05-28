@@ -51,7 +51,7 @@ I used `POSTMAN` to check the authencity of my endpoints.
 
 ### URL
 
-**_https://capstone-udacity-fsnd.herokuapp.com/_**
+**_https://udacity-fsnd-project-7.herokuapp.com/_**
 
 ## Project HighLights
 
