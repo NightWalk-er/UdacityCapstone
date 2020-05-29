@@ -2,7 +2,7 @@ import os
 from sqlalchemy import Column, String, Integer
 from flask_sqlalchemy import SQLAlchemy
 import json
-import config import database_setup
+import bearer_conf import database_setup
 
 data_path = os.environ.get('DATABASE_URL', "postgres://{}:{}@{}/{}".format(database_setup["user_name"], database_setup["password"], database_setup["port"], database_setup["database_name_test"]))
 
