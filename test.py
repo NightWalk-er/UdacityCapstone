@@ -6,7 +6,7 @@ from flask import Flask
 from models import Actor, Movie, setup_db
 from app import create_app
 from models import db
-from bearer_conf import bearer_tokens
+from config import bearer_tokens
 from datetime import date
 
 class DeployTestCase(unittest.TestCase):
